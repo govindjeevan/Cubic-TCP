@@ -1,0 +1,46 @@
+plot "E.plotme" title "E" with lines lw 1.5
+set xrange [2:10]
+set yrange [0:200]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "CwndA.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Cwnd (Packets)" font "Verdana"
+set key outside;
+set key right top;
+plot "A.plotme" title "A" with lines lw 1.5, "2_format.txt" title "2_format" with lines lw 1.5
+
+set yrange [0:100]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "CwndB.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Cwnd (Packets)" font "Verdana"
+set key outside;
+set key right top;
+plot "B.plotme" title "B" with lines lw 1.5 ,"3_format.txt" title "3_format" with lines lw 1.5
+
+set yrange [0:100]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "CwndC.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Cwnd (Packets)" font "Verdana"
+set key outside;
+set key right top;
+plot "C.plotme" title "C" with lines lw 1.5 "4_format.txt" title "4_format" with lines lw 1.5
+
+set yrange [0:100]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "CwndD.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Cwnd (Packets)" font "Verdana"
+set key outside;
+set key right top;
+plot "D.plotme" title "D" with lines lw 1.5 "5_format.txt" title "5_format" with lines lw 1.5
+
+set yrange [0:100]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "CwndE.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Cwnd (Packets)" font "Verdana"
+set key outside;
+set key right top;
+plot "E.plotme" title "E" with lines lw 1.5 "6_format.txt" title "6_format" with lines lw 1.5
