@@ -132,7 +132,7 @@ void InstallBulkSend1 (Ptr<Node> node, Ipv4Address address, uint16_t port,
 
   source.SetAttribute ("MaxBytes", UintegerValue (0));
   ApplicationContainer sourceApps = source.Install (node);
-  Time timeToStart = Seconds (uv->GetValue (0, 1));
+  Time timeToStart = Seconds (uv->GetValue (10, 11));
   sourceApps.Start (timeToStart);
   Simulator::Schedule (timeToStart + Seconds (0.001), &TraceCwnd, nodeId, cwndWindow, CwndTrace);
   sourceApps.Stop (Seconds (stopTime));
@@ -152,7 +152,7 @@ void InstallPacketSink1 (Ptr<Node> node, uint16_t port)
   PacketSinkHelper sink ("ns3::TcpSocketFactory",
                          InetSocketAddress (Ipv4Address::GetAny (), port));
   ApplicationContainer sinkApps = sink.Install (node);
-  sinkApps.Start (Seconds (0.0));
+  sinkApps.Start (Seconds (10.0));
   sinkApps.Stop (Seconds (stopTime));
 }
 
@@ -175,9 +175,9 @@ static void GetSSStats (Ptr<Node> node, Time at, std::string stack)
 int main (int argc, char *argv[])
 {
   uint32_t stream = 1;
-  std::string stack = "ns3";
+  std::string stack = "linux";
   std::string sock_factory = "ns3::TcpSocketFactory";
-  std::string transport_prot = "TcpBic";
+  std::string transport_prot = "TcpCubic";
   std::string linux_prot = "cubic";
   std::string queue_disc_type = "FifoQueueDisc";
   bool useEcn = true;
@@ -223,7 +223,10 @@ int main (int argc, char *argv[])
 
   TypeId qdTid;
   NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (queue_disc_type, &qdTid), "TypeId " << queue_disc_type << " not found");
-
+  if (stack == "ns3")
+  {
+    Config::SetDefault ("ns3::TcpL4Protocol::RecoveryType", TypeIdValue (TypeId::LookupByName ("ns3::TcpPrrRecovery")));
+  }
   if (stack == "ns3")
     {
       if (transport_prot.compare ("ns3::TcpWestwoodPlus") == 0)
@@ -465,7 +468,10 @@ int main (int argc, char *argv[])
   std::string dirToSave = "mkdir -p " + dir;
   system (dirToSave.c_str ());
   system ((dirToSave + "/pcap/").c_str ());
+  if(stack=="ns3")
+  {
   system ((dirToSave + "/cwndTraces/").c_str ());
+}
   system ((dirToSave + "/markTraces/").c_str ());
   system ((dirToSave + "/queueTraces/").c_str ());
   system (("cp -R PlotScripts-gfc-dumbbell/* " + dir + "/pcap/").c_str ());
