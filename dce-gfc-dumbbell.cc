@@ -40,7 +40,7 @@
 using namespace ns3;
 Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
 std::string dir = "results/gfc-dumbbell/";
-double stopTime = 20;
+double stopTime = 50;
 
 static void
 CwndChangeA (uint32_t oldCwnd, uint32_t newCwnd)
@@ -132,7 +132,7 @@ void InstallBulkSend1 (Ptr<Node> node, Ipv4Address address, uint16_t port,
 
   source.SetAttribute ("MaxBytes", UintegerValue (0));
   ApplicationContainer sourceApps = source.Install (node);
-  Time timeToStart = Seconds (uv->GetValue (0, 1));
+  Time timeToStart = Seconds (uv->GetValue (10, 11));
   sourceApps.Start (timeToStart);
   Simulator::Schedule (timeToStart + Seconds (0.001), &TraceCwnd, nodeId, cwndWindow, CwndTrace);
   sourceApps.Stop (Seconds (stopTime));
@@ -152,7 +152,7 @@ void InstallPacketSink1 (Ptr<Node> node, uint16_t port)
   PacketSinkHelper sink ("ns3::TcpSocketFactory",
                          InetSocketAddress (Ipv4Address::GetAny (), port));
   ApplicationContainer sinkApps = sink.Install (node);
-  sinkApps.Start (Seconds (0.0));
+  sinkApps.Start (Seconds (10.0));
   sinkApps.Stop (Seconds (stopTime));
 }
 
@@ -175,9 +175,9 @@ static void GetSSStats (Ptr<Node> node, Time at, std::string stack)
 int main (int argc, char *argv[])
 {
   uint32_t stream = 1;
-  std::string stack = "ns3";
+  std::string stack = "linux";
   std::string sock_factory = "ns3::TcpSocketFactory";
-  std::string transport_prot = "TcpBic";
+  std::string transport_prot = "TcpCubic";
   std::string linux_prot = "cubic";
   std::string queue_disc_type = "FifoQueueDisc";
   bool useEcn = true;
@@ -223,7 +223,10 @@ int main (int argc, char *argv[])
 
   TypeId qdTid;
   NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (queue_disc_type, &qdTid), "TypeId " << queue_disc_type << " not found");
-
+  if (stack == "ns3")
+  {
+    Config::SetDefault ("ns3::TcpL4Protocol::RecoveryType", TypeIdValue (TypeId::LookupByName ("ns3::TcpPrrRecovery")));
+  }
   if (stack == "ns3")
     {
       if (transport_prot.compare ("ns3::TcpWestwoodPlus") == 0)
@@ -237,6 +240,7 @@ int main (int argc, char *argv[])
         {
           TypeId tcpTid;
           NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (transport_prot, &tcpTid), "TypeId " << transport_prot << " not found");
+          Config::SetDefault ("ns3::TcpCubic::HyStart", BooleanValue(true));
           Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TypeId::LookupByName (transport_prot)));
         }
     }
@@ -248,37 +252,37 @@ int main (int argc, char *argv[])
 
   // Create the point-to-point link helpers
   PointToPointHelper pointToPointRouter;
-  pointToPointRouter.SetDeviceAttribute  ("DataRate", StringValue ("150Mbps"));
-  pointToPointRouter.SetChannelAttribute ("Delay", StringValue ("0.00075ms"));
+  pointToPointRouter.SetDeviceAttribute  ("DataRate", StringValue ("1Mbps"));
+  pointToPointRouter.SetChannelAttribute ("Delay", StringValue ("50ms"));
   NetDeviceContainer r1r2ND = pointToPointRouter.Install (routers.Get (0), routers.Get (1));
 
   std::vector <NetDeviceContainer> leftToRouter;
   std::vector <NetDeviceContainer> routerToRight;
   PointToPointHelper pointToPointLeaf;
-  pointToPointLeaf.SetDeviceAttribute    ("DataRate", StringValue ("150Mbps"));
+  pointToPointLeaf.SetDeviceAttribute    ("DataRate", StringValue ("10Mbps"));
 
   // Node 1
-  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("0.00025ms"));
+  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("5ms"));
   leftToRouter.push_back (pointToPointLeaf.Install (leftNodes.Get (0), routers.Get (0)));
   routerToRight.push_back (pointToPointLeaf.Install (routers.Get (1), rightNodes.Get (0)));
 
   // Node 2
-  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("0.0001ms"));
+  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("5ms"));
   leftToRouter.push_back (pointToPointLeaf.Install (leftNodes.Get (1), routers.Get (0)));
   routerToRight.push_back (pointToPointLeaf.Install (routers.Get (1), rightNodes.Get (1)));
 
   // Node 3
-  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("0.00005ms"));
+  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("5ms"));
   leftToRouter.push_back (pointToPointLeaf.Install (leftNodes.Get (2), routers.Get (0)));
   routerToRight.push_back (pointToPointLeaf.Install (routers.Get (1), rightNodes.Get (2)));
 
   // Node 4
-  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("0.000025ms"));
+  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("5ms"));
   leftToRouter.push_back (pointToPointLeaf.Install (leftNodes.Get (3), routers.Get (0)));
   routerToRight.push_back (pointToPointLeaf.Install (routers.Get (1), rightNodes.Get (3)));
 
   // Node 5
-  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("0.000005ms"));
+  pointToPointLeaf.SetChannelAttribute   ("Delay", StringValue ("5ms"));
   leftToRouter.push_back (pointToPointLeaf.Install (leftNodes.Get (4), routers.Get (0)));
   routerToRight.push_back (pointToPointLeaf.Install (routers.Get (1), rightNodes.Get (4)));
 
@@ -395,6 +399,7 @@ int main (int argc, char *argv[])
   std::string dirToSave = "mkdir -p " + dir;
   system (dirToSave.c_str ());
   system ((dirToSave + "/pcap/").c_str ());
+  system ((dirToSave + "/cwndTraces/").c_str ());
   system ((dirToSave + "/markTraces/").c_str ());
   system ((dirToSave + "/queueTraces/").c_str ());
   system (("cp -R PlotScripts-gfc-dumbbell/* " + dir + "/pcap/").c_str ());
