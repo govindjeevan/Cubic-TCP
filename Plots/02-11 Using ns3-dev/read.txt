@@ -1,0 +1,4 @@
+1. Used ns3-dce to generate the PlotMe for Linux.
+2. Used ns3-dev to generate the PlotMe for ns-3 stack.
+
+Graphs are becoming similar in pattern but there is difference in number(value)
