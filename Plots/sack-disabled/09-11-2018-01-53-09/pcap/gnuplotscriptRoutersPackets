@@ -1,0 +1,8 @@
+set xrange [2:10]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "TP-Router-Packets.png"
+set xlabel "Time (sec)"
+set ylabel "Throughput (Packets/sec)"
+set key outside;
+set key right top;
+plot "TP-R1.plotme" title "R1" with lines lw 1.5
