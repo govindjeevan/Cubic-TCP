@@ -1,0 +1,22 @@
+set xrange [2:10]
+set yrange [0:150]
+set ytics 10
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "ProportionalFairshare-A.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Throughput (Mbps)" font "Verdana"
+set key outside;
+set key right top;
+plot "TP-A_1.plotme" title "A" with lines lw 1.5, 30.000 title "A-PF" with lines lw 1.5 dashtype 2 lc 8
+
+set output "ProportionalFairshare-B.png"
+plot "TP-B_1.plotme" title "B" with lines lw 1.5, 30.000 title "B-PF" with lines lw 1.5 dashtype 2 lc 8
+
+set output "ProportionalFairshare-C.png"
+plot "TP-C_1.plotme" title "C" with lines lw 1.5, 30.000 title "C-PF" with lines lw 1.5 dashtype 2 lc 8
+
+set output "ProportionalFairshare-D.png"
+plot "TP-D_1.plotme" title "D" with lines lw 1.5, 30.000 title "D-PF" with lines lw 1.5 dashtype 2 lc 8
+
+set output "ProportionalFairshare-E.png"
+plot "TP-E_1.plotme" title "E" with lines lw 1.5, 30.000 title "E-PF" with lines lw 1.5 dashtype 2 lc 8
